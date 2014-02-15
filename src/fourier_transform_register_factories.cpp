@@ -7,11 +7,12 @@ std::shared_ptr<fourier_transform> Create_fast_fourier_transform();
 std::shared_ptr<fourier_transform> Create_direct_fourier_transform();
 	
 // TODO : Declare your factories here
-/*
-namespace YOUR_LOGIN{
+
+namespace tp709{
 	std::shared_ptr<fourier_transform> Create_direct_fourier_transform_parfor();
+	std::shared_ptr<fourier_transform> Create_fast_fourier_transform_taskgroup();
 }
-*/
+
 
 
 void fourier_transform::RegisterDefaultFactories()
@@ -22,7 +23,8 @@ void fourier_transform::RegisterDefaultFactories()
 	RegisterTransformFactory("hpce.direct_fourier_transform", Create_direct_fourier_transform);
 	
 	// TODO : Add your factories here
-	// e.g. RegisterTransformFactory("hpce.YOUR_LOGIN.direct_fourier_transform_parfor", hpce::YOUR_LOGIN::Create_direct_fourier_transform_parfor);
+	RegisterTransformFactory("hpce.tp709.direct_fourier_transform_parfor", hpce::tp709::Create_direct_fourier_transform_parfor);
+	RegisterTransformFactory("hpce.tp709.fast_fourier_transform_taskgroup", hpce::tp709::Create_fast_fourier_transform_taskgroup);
 }
 	
 }; // namespace hpce

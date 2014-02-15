@@ -1,6 +1,5 @@
 #include "fourier_transform.hpp"
 
-#include <stdexcept>
 #include <cstdlib>
 #include <random>
 #include <iostream>
