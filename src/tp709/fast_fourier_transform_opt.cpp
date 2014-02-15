@@ -48,7 +48,7 @@ namespace hpce
 									 	
 					fft_group.wait();
 					
-					size_t K = 8;
+					size_t K = 64;
 					while(K>m)
 					{
 						K=K/2;

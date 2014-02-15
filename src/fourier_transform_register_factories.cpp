@@ -12,7 +12,7 @@ namespace tp709{
 	std::shared_ptr<fourier_transform> Create_direct_fourier_transform_parfor();
 	std::shared_ptr<fourier_transform> Create_fast_fourier_transform_taskgroup();
 	std::shared_ptr<fourier_transform> Create_fast_fourier_transform_parfor();
-	std::shared_ptr<fourier_transform> Create_fast_fourier_transform_parfor();
+	std::shared_ptr<fourier_transform> Create_fast_fourier_transform_combined();
 	std::shared_ptr<fourier_transform> Create_fast_fourier_transform_opt();
 }
 
