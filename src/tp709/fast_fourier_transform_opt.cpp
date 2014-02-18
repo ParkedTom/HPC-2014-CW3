@@ -32,6 +32,7 @@ namespace hpce
 				std::complex<double> *pOut, size_t sOut
 			) const 
 			{
+				/* Split radix FFT implementation Algorithm 1 taken from http://www.fftw.org/newsplit.pdf*/
 				assert(n>0);
 				tbb::task_group fft_group;
 				
@@ -40,39 +41,50 @@ namespace hpce
 				}else if (n == 2){
 					pOut[0] = pIn[0]+pIn[sIn];
 					pOut[sOut] = pIn[0]-pIn[sIn];
-				}else{
+				}/*else if (n == 4){
+					pOut[0] = pIn[0]+pIn[sIn];
+					pOut[sOut] = pIn[0]-pIn[sIn];
+					pOut[1] = pIn
+				}*/else{
 					size_t m = n/2;
-		
-					fft_group.run( [=]{forwards_impl(m,wn*wn,pIn,2*sIn,pOut,sOut); } );
-					fft_group.run( [=]{forwards_impl(m,wn*wn,pIn+sIn,2*sIn,pOut+sOut*m,sOut); } );
-									 	
-					fft_group.wait();
 					
-					size_t K = 64;
-					while(K>m)
-					{
-						K=K/2;
-						if(K<1)
+					if(m > 32){
+						fft_group.run( [=]{forwards_impl(m,wn*wn,pIn,2*sIn,pOut,sOut); } ); 
+						fft_group.run( [=]{forwards_impl(m,wn*wn,pIn+sIn,2*sIn,pOut+sOut*m,sOut); } );
+										 	
+						fft_group.wait();
+					}else{
+						forwards_impl(m,wn*wn,pIn,2*sIn,pOut,sOut);
+						forwards_impl(m,wn*wn,pIn+sIn,2*sIn,pOut+sOut*m,sOut);
+					}
+					
+					if(m>512)
+					{	
+						size_t K = 512;				
+						tbb::parallel_for(size_t(0), m/K, [=](size_t j0)
 						{
-							K=1;
-							break;
+							std::complex<double> w=/*std::complex<double>(1.0, 0.0)**/std::pow(wn,(double)j0*(double)K);
+							
+							for(size_t j1=0; j1<K;j1++)
+							{
+								size_t j = j0*K + j1;
+						  		std::complex<double> t1 = w*pOut[m+j];
+						  		std::complex<double> t2 = pOut[j]-t1;
+						  		pOut[j] = pOut[j]+t1;                 /*  pOut[j] = pOut[j] + w^i pOut[m+j] */
+						  		pOut[j+m] = t2;                          /*  pOut[j] = pOut[j] - w^i pOut[m+j] */
+						  		w = w*wn;
+							}
+						});
+					}else{
+						std::complex<double> w=std::complex<double>(1.0, 0.0);
+						for (size_t j=0;j<m;j++){
+						  std::complex<double> t1 = w*pOut[m+j];
+						  std::complex<double> t2 = pOut[j]-t1;
+						  pOut[j] = pOut[j]+t1;                 /*  pOut[j] = pOut[j] + w^i pOut[m+j] */
+						  pOut[j+m] = t2;                          /*  pOut[j] = pOut[j] - w^i pOut[m+j] */
+						  w = w*wn;
 						}
-					}			
-										
-					tbb::parallel_for(size_t(0), m/K, [=](size_t j0)
-					{
-						std::complex<double> w=/*std::complex<double>(1.0, 0.0)**/std::pow(wn,(double)j0*(double)K);
-						
-						for(size_t j1=0; j1<K;j1++)
-						{
-							size_t j = j0*K + j1;
-					  		std::complex<double> t1 = w*pOut[m+j];
-					  		std::complex<double> t2 = pOut[j]-t1;
-					  		pOut[j] = pOut[j]+t1;                 /*  pOut[j] = pOut[j] + w^i pOut[m+j] */
-					  		pOut[j+m] = t2;                          /*  pOut[j] = pOut[j] - w^i pOut[m+j] */
-					  		w = w*wn;
-						}
-					});
+					}
 				}
 			}
 			
