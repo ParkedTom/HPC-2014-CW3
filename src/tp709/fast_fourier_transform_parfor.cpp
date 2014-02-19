@@ -51,6 +51,7 @@ namespace hpce
 						if(K < 1)
 						{
 							K = 1;
+							break;
 						}
 					}
 										

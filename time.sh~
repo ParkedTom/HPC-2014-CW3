@@ -1,0 +1,18 @@
+#!/bin/bash
+
+for i in {1..4}
+do
+	./bin/time_fourier_transform hpce.direct_fourier_transform $i | tee dft_$i.csv
+	
+	./bin/time_fourier_transform hpce.fast_fourier_transform $i | tee fft_$i.csv
+	
+	./bin/time_fourier_transform hpce.tp709.direct_fourier_transform_parfor $i | tee dft_par_$i.csv
+	
+	./bin/time_fourier_transform hpce.tp709.fast_fourier_transform_taskgroup $i | tee fft_tg_$i.csv
+	
+	./bin/time_fourier_transform hpce.tp709.fast_fourier_transform_parfor $i | tee fft_parfor_$i.csv
+	
+	./bin/time_fourier_transform hpce.tp709.fast_fourier_transform_combined $i | tee fft_comb_$i.csv
+	
+	./bin/time_fourier_transform hpce.tp709.fast_fourier_transform_opt $i | tee fft_opt_$i.csv
+done

@@ -4,6 +4,7 @@
 #include <cassert>
 #include "tbb/parallel_for.h"
 #include "tbb/task_group.h"
+#include <iostream>
 
 namespace hpce
 {
@@ -41,11 +42,24 @@ namespace hpce
 				}else if (n == 2){
 					pOut[0] = pIn[0]+pIn[sIn];
 					pOut[sOut] = pIn[0]-pIn[sIn];
-				}/*else if (n == 4){
-					pOut[0] = pIn[0]+pIn[sIn];
-					pOut[sOut] = pIn[0]-pIn[sIn];
-					pOut[1] = pIn
-				}*/else{
+				}else if (n == 4){
+					size_t m = 2;
+					std::complex<double> w=std::complex<double>(1.0, 0.0);
+					pOut[0] = pIn[0]+pIn[2*sIn];
+					pOut[sOut] = pIn[0]-pIn[2*sIn];
+
+					pOut[2*sOut] = pIn[sIn]+pIn[3*sIn];
+					pOut[3*sOut] = pIn[sIn]-pIn[3*sIn];
+					
+					for (size_t j=0;j<2;j++){
+					  std::complex<double> t1 = w*pOut[m+j];
+					  std::complex<double> t2 = pOut[j]-t1;
+					  pOut[j] = pOut[j]+t1;                 /*  pOut[j] = pOut[j] + w^i pOut[m+j] */
+					  pOut[j+m] = t2;                          /*  pOut[j] = pOut[j] - w^i pOut[m+j] */
+					  w = w*wn;
+					}
+				
+				}else{
 					size_t m = n/2;
 					
 					if(m > 32){
